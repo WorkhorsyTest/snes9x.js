@@ -236,6 +236,17 @@
 #endif
 #include "statemanager.h"
 
+#include <string>
+#include <SDL/SDL.h>
+//#include <SDL2/SDL_audio.h>
+#include <emscripten.h>
+#include <emscripten/bind.h>
+
+SDL_Window* g_window = nullptr;
+SDL_Renderer* g_renderer = nullptr;
+SDL_Texture* g_screen = nullptr;
+std::string g_game_file_name;
+
 #ifdef NETPLAY_SUPPORT
 #ifdef _DEBUG
 #define NP_DEBUG 2
@@ -1636,7 +1647,7 @@ static void sigbrkhandler (int)
 }
 #endif
 
-int main (int argc, char **argv)
+int mainXXX (int argc, char **argv)
 {
 	if (argc < 2)
 		S9xUsage();
@@ -1977,4 +1988,68 @@ int main (int argc, char **argv)
 	}
 
 	return (0);
+}
+
+void on_emultor_loop() {
+
+}
+
+void start_main_loop() {
+	// Tell the web app that everything is loaded
+	EM_ASM_ARGS({
+		onReady();
+	}, 0);
+
+	emscripten_set_main_loop(on_emultor_loop, 0, true);
+
+	// Cleanup the SDL resources then exit
+	SDL_Quit();
+}
+
+int main(int argc, char* argv[]) {
+
+	g_game_file_name = "rom_from_browser.nes";
+
+	// Initialize SDL
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) {
+		fprintf(stderr, "Could not initialize SDL: %s\n", SDL_GetError());
+		return -1;
+	}
+
+	// Create a SDL window
+	g_window = SDL_CreateWindow(
+		"snes9x.js",
+		0, 0, 256, 240,
+		0
+	);
+	if (! g_window) {
+		fprintf(stderr, "Couldn't create a window: %s\n", SDL_GetError());
+		return -1;
+	}
+
+	// Create a SDL renderer
+	g_renderer = SDL_CreateRenderer(
+		g_window,
+		-1,
+		SDL_RENDERER_ACCELERATED
+	);
+	if (! g_renderer) {
+		fprintf(stderr, "Couldn't create a renderer: %s\n", SDL_GetError());
+		return -1;
+	}
+
+	// Create the SDL screen
+	g_screen = SDL_CreateTexture(g_renderer,
+			SDL_PIXELFORMAT_BGR888, SDL_TEXTUREACCESS_STATIC, 256, 240);
+	if (! g_screen) {
+		fprintf(stderr, "Couldn't create a teture: %s\n", SDL_GetError());
+		return -1;
+	}
+
+
+	//on_emultor_start();
+
+	start_main_loop();
+
+	return 0;
 }

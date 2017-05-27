@@ -37,14 +37,15 @@ GASM       = em++
 INCLUDES   += -I. -I.. -I../apu/ -I../apu/bapu -I../jma/ -I../filter/ -I/home/matt/.emscripten_ports/zlib/zlib-version_1/ -I/home/matt/.emscripten_ports/sdl2-image/SDL2_image-version_3/external/libpng-1.6.2/
 
 #CCFLAGS    = -g4 -O0 -fomit-frame-pointer -fno-exceptions -fno-rtti -pedantic -Wall -W -Wno-unused-parameter  -DJOYSTICK_SUPPORT -DZLIB -DJMA_SUPPORT -DHAVE_LIBPNG -DHAVE_MKSTEMP -DHAVE_STRINGS_H -DHAVE_SYS_IOCTL_H -DHAVE_STDINT_H -DRIGHTSHIFT_IS_SAR -DUSE_XVIDEO -DUSE_THREADS $(DEFS)
-# Removed flags: -DJOYSTICK_SUPPORT -DUSE_XVIDEO -DUSE_THREADS
+# Removed flags: -DJOYSTICK_SUPPORT -DUSE_XVIDEO -DUSE_THREADS -fno-rtti
 # Added flags: -DNOSOUND
-CCFLAGS    = -g4 -O0 -fomit-frame-pointer -fno-exceptions -fno-rtti -pedantic -Wall -W -Wno-unused-parameter -DZLIB -DJMA_SUPPORT -DHAVE_LIBPNG -DHAVE_MKSTEMP -DHAVE_STRINGS_H -DHAVE_SYS_IOCTL_H -DHAVE_STDINT_H -DRIGHTSHIFT_IS_SAR -DNOSOUND $(DEFS)
-CFLAGS     = $(CCFLAGS)
+CCFLAGS    = --bind -fomit-frame-pointer -fno-exceptions -pedantic -Wall -W -Wno-unused-parameter -DZLIB -DJMA_SUPPORT -DHAVE_LIBPNG -DHAVE_MKSTEMP -DHAVE_STRINGS_H -DHAVE_SYS_IOCTL_H -DHAVE_STDINT_H -DRIGHTSHIFT_IS_SAR -DNOSOUND $(DEFS)
+CFLAGS     = -std=c11 $(CCFLAGS)
 
 .SUFFIXES: .o .cpp .c .cc .h .m .i .s .obj
 
-all: Makefile configure snes9x.html
+all: Makefile configure index.js
+	mv index.js static/index.js
 
 Makefile: configure Makefile.in
 	@echo "Makefile is older than configure or in-file. Run configure or touch Makefile."
@@ -54,9 +55,9 @@ configure: configure.ac
 	@echo "configure is older than in-file. Run autoconf or touch configure."
 	exit 1
 
-snes9x.html: $(OBJECTS)
+index.js: $(OBJECTS)
 	#-lm -lz -lpng -lSM -lICE -lX11 -lXext -lXv
-	$(CCC) $(LDFLAGS) $(INCLUDES) -o $@ $(OBJECTS) -lpthread -s WASM=1 -s USE_SDL=2 -s USE_ZLIB=1 -s USE_LIBPNG=1 -s FORCE_FILESYSTEM=1 -s ASSERTIONS=1 -s ALLOW_MEMORY_GROWTH=1 -s ABORTING_MALLOC=0
+	$(CCC) $(LDFLAGS) $(INCLUDES) -o $@ $(OBJECTS) -g4 -O0 -lpthread -s WASM=1 -s USE_SDL=2 -s USE_ZLIB=1 -s USE_LIBPNG=1 -s FORCE_FILESYSTEM=1 -s ASSERTIONS=1 -s ALLOW_MEMORY_GROWTH=1 -s ABORTING_MALLOC=0
 
 ../jma/s9x-jma.o: ../jma/s9x-jma.cpp
 	$(CCC) $(INCLUDES) -c $(CCFLAGS) -fexceptions $*.cpp -o $@
@@ -103,4 +104,8 @@ snes9x.html: $(OBJECTS)
 	cp $*.obj $*.o
 
 clean:
+	rm -f static/index.js
+	rm -f index.js.map
+	rm -f index.wasm
+	rm -f index.wast
 	rm -f $(OBJECTS)
