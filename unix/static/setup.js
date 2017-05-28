@@ -221,15 +221,15 @@ let main = (function() {
 	$('#button_zoom_in').addEventListener('click', function() {
 		g_zoom++;
 		let style = $('#screen').style;
-		style.width = (g_zoom * 256) + 'px';
-		style.height = (g_zoom * 240) + 'px';
+		style.width = (g_zoom * 512) + 'px';
+		style.height = (g_zoom * 478) + 'px';
 	}, false);
 
 	$('#button_zoom_out').addEventListener('click', function() {
 		if (g_zoom > 1) g_zoom--;
 		let style = $('#screen').style;
-		style.width = (g_zoom * 256) + 'px';
-		style.height = (g_zoom * 240) + 'px';
+		style.width = (g_zoom * 512) + 'px';
+		style.height = (g_zoom * 478) + 'px';
 	}, false);
 
 	$('#select_game').addEventListener('change', function(event) {

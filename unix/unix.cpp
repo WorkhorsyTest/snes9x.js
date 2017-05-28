@@ -2019,7 +2019,7 @@ int main(int argc, char* argv[]) {
 	// Create a SDL window
 	g_window = SDL_CreateWindow(
 		"snes9x.js",
-		0, 0, 256, 240,
+		0, 0, 512, 478,
 		0
 	);
 	if (! g_window) {
@@ -2040,7 +2040,7 @@ int main(int argc, char* argv[]) {
 
 	// Create the SDL screen
 	g_screen = SDL_CreateTexture(g_renderer,
-			SDL_PIXELFORMAT_BGR888, SDL_TEXTUREACCESS_STATIC, 256, 240);
+			SDL_PIXELFORMAT_BGR888, SDL_TEXTUREACCESS_STATIC, 512, 478);
 	if (! g_screen) {
 		fprintf(stderr, "Couldn't create a teture: %s\n", SDL_GetError());
 		return -1;
@@ -2048,7 +2048,7 @@ int main(int argc, char* argv[]) {
 */
 
 	// Grab a SDL surface from the screen
-	g_screen = SDL_SetVideoMode(256, 240, 32, SDL_SWSURFACE | SDL_ANYFORMAT);
+	g_screen = SDL_SetVideoMode(512, 478, 32, SDL_SWSURFACE | SDL_ANYFORMAT);
 	if (! g_screen) {
 		fprintf(stderr, "Couldn't create a surface: %s\n", SDL_GetError());
 		return -1;
