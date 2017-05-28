@@ -44,16 +44,8 @@ CFLAGS     = -std=c11 $(CCFLAGS)
 
 .SUFFIXES: .o .cpp .c .cc .h .m .i .s .obj
 
-all: Makefile configure index.js
+all: Makefile index.js
 	mv index.js static/index.js
-
-Makefile: configure Makefile.in
-	@echo "Makefile is older than configure or in-file. Run configure or touch Makefile."
-	exit 1
-
-configure: configure.ac
-	@echo "configure is older than in-file. Run autoconf or touch configure."
-	exit 1
 
 index.js: $(OBJECTS)
 	#-lm -lz -lpng -lSM -lICE -lX11 -lXext -lXv
