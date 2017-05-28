@@ -242,9 +242,9 @@
 #include <emscripten.h>
 #include <emscripten/bind.h>
 
-SDL_Window* g_window = nullptr;
-SDL_Renderer* g_renderer = nullptr;
-SDL_Texture* g_screen = nullptr;
+//SDL_Window* g_window = nullptr;
+//SDL_Renderer* g_renderer = nullptr;
+SDL_Surface* g_screen = nullptr;
 std::string g_game_file_name;
 
 #ifdef NETPLAY_SUPPORT
@@ -2015,7 +2015,7 @@ int main(int argc, char* argv[]) {
 		fprintf(stderr, "Could not initialize SDL: %s\n", SDL_GetError());
 		return -1;
 	}
-
+/*
 	// Create a SDL window
 	g_window = SDL_CreateWindow(
 		"snes9x.js",
@@ -2045,7 +2045,14 @@ int main(int argc, char* argv[]) {
 		fprintf(stderr, "Couldn't create a teture: %s\n", SDL_GetError());
 		return -1;
 	}
+*/
 
+	// Grab a SDL surface from the screen
+	g_screen = SDL_SetVideoMode(256, 240, 32, SDL_SWSURFACE | SDL_ANYFORMAT);
+	if (! g_screen) {
+		fprintf(stderr, "Couldn't create a surface: %s\n", SDL_GetError());
+		return -1;
+	}
 
 	//on_emultor_start();
 
