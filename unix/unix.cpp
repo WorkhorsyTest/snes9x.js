@@ -236,16 +236,56 @@
 #endif
 #include "statemanager.h"
 
+#include <vector>
 #include <string>
 #include <SDL/SDL.h>
 //#include <SDL2/SDL_audio.h>
 #include <emscripten.h>
 #include <emscripten/bind.h>
 
+using namespace std;
+
 //SDL_Window* g_window = nullptr;
 //SDL_Renderer* g_renderer = nullptr;
 SDL_Surface* g_screen = nullptr;
-std::string g_game_file_name;
+string g_game_file_name;
+vector<uint8_t> g_game_data;
+
+void set_game_data_size(size_t size) {
+	g_game_data.resize(size);
+	std::fill(g_game_data.begin(), g_game_data.end(), 0);
+}
+
+void set_game_data_index(size_t index, uint8_t data) {
+	g_game_data[index] = data;
+}
+
+void set_game_data_from_file(string file_name) {
+	ifstream reader(file_name.c_str(), ios::in|ios::binary);
+	if(reader.fail()) {
+		fprintf(stderr, "Error while loading rom '%s': %s\n", file_name.c_str(), strerror(errno));
+		exit(1);
+	}
+
+	reader.seekg(0, ios::end);
+	size_t length = reader.tellg();
+	reader.seekg(0, ios::beg);
+	assert(length > 0);
+	g_game_data.resize(length);
+	reader.read(reinterpret_cast<char*>(g_game_data.data()), g_game_data.size());
+	reader.close();
+	g_game_file_name = file_name;
+}
+
+void on_emultor_start() {
+
+}
+
+EMSCRIPTEN_BINDINGS(Wrappers) {
+	emscripten::function("set_game_data_size", &set_game_data_size);
+	emscripten::function("set_game_data_index", &set_game_data_index);
+	emscripten::function("on_emultor_start", &on_emultor_start);
+};
 
 #ifdef NETPLAY_SUPPORT
 #ifdef _DEBUG
@@ -2053,8 +2093,6 @@ int main(int argc, char* argv[]) {
 		fprintf(stderr, "Couldn't create a surface: %s\n", SDL_GetError());
 		return -1;
 	}
-
-	//on_emultor_start();
 
 	start_main_loop();
 

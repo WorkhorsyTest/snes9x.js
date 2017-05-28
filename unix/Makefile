@@ -39,7 +39,7 @@ INCLUDES   += -I. -I.. -I../apu/ -I../apu/bapu -I../jma/ -I../filter/ -I/home/ma
 #CCFLAGS    = -g4 -O0 -fomit-frame-pointer -fno-exceptions -fno-rtti -pedantic -Wall -W -Wno-unused-parameter  -DJOYSTICK_SUPPORT -DZLIB -DJMA_SUPPORT -DHAVE_LIBPNG -DHAVE_MKSTEMP -DHAVE_STRINGS_H -DHAVE_SYS_IOCTL_H -DHAVE_STDINT_H -DRIGHTSHIFT_IS_SAR -DUSE_XVIDEO -DUSE_THREADS $(DEFS)
 # Removed flags: -DJOYSTICK_SUPPORT -DUSE_XVIDEO -DUSE_THREADS -fno-rtti
 # Added flags: -DNOSOUND
-CCFLAGS    = --bind -fomit-frame-pointer -fno-exceptions -pedantic -Wall -W -Wno-unused-parameter -DZLIB -DJMA_SUPPORT -DHAVE_LIBPNG -DHAVE_MKSTEMP -DHAVE_STRINGS_H -DHAVE_SYS_IOCTL_H -DHAVE_STDINT_H -DRIGHTSHIFT_IS_SAR -DNOSOUND $(DEFS)
+CCFLAGS    = -fomit-frame-pointer -fno-exceptions -pedantic -Wall -W -Wno-unused-parameter -DZLIB -DJMA_SUPPORT -DHAVE_LIBPNG -DHAVE_MKSTEMP -DHAVE_STRINGS_H -DHAVE_SYS_IOCTL_H -DHAVE_STDINT_H -DRIGHTSHIFT_IS_SAR -DNOSOUND $(DEFS)
 CFLAGS     = -std=c11 $(CCFLAGS)
 
 .SUFFIXES: .o .cpp .c .cc .h .m .i .s .obj
@@ -49,7 +49,7 @@ all: Makefile index.js
 
 index.js: $(OBJECTS)
 	#-lm -lz -lpng -lSM -lICE -lX11 -lXext -lXv
-	$(CCC) $(LDFLAGS) $(INCLUDES) -o $@ $(OBJECTS) -g4 -O0 -lpthread -s WASM=1 -s USE_SDL=2 -s USE_ZLIB=1 -s USE_LIBPNG=1 -s FORCE_FILESYSTEM=1 -s ASSERTIONS=1 -s ALLOW_MEMORY_GROWTH=1 -s ABORTING_MALLOC=0
+	$(CCC) $(LDFLAGS) $(INCLUDES) -o $@ $(OBJECTS) -g4 -O0 --bind -lpthread -s WASM=1 -s USE_SDL=2 -s USE_ZLIB=1 -s USE_LIBPNG=1 -s FORCE_FILESYSTEM=1 -s ASSERTIONS=1 -s ALLOW_MEMORY_GROWTH=1 -s ABORTING_MALLOC=0
 
 ../jma/s9x-jma.o: ../jma/s9x-jma.cpp
 	$(CCC) $(INCLUDES) -c $(CCFLAGS) -fexceptions $*.cpp -o $@
