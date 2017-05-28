@@ -32,15 +32,13 @@ OBJECTS   += ../jma/7zlzma.o ../jma/crc32.o ../jma/iiostrm.o ../jma/inbyte.o ../
 endif
 
 CCC        = em++
-CC         = emcc
 GASM       = em++
 INCLUDES   += -I. -I.. -I../apu/ -I../apu/bapu -I../jma/ -I../filter/ -I/home/matt/.emscripten_ports/zlib/zlib-version_1/ -I/home/matt/.emscripten_ports/sdl2-image/SDL2_image-version_3/external/libpng-1.6.2/
 
 #CCFLAGS    = -g4 -O0 -fomit-frame-pointer -fno-exceptions -fno-rtti -pedantic -Wall -W -Wno-unused-parameter  -DJOYSTICK_SUPPORT -DZLIB -DJMA_SUPPORT -DHAVE_LIBPNG -DHAVE_MKSTEMP -DHAVE_STRINGS_H -DHAVE_SYS_IOCTL_H -DHAVE_STDINT_H -DRIGHTSHIFT_IS_SAR -DUSE_XVIDEO -DUSE_THREADS $(DEFS)
 # Removed flags: -DJOYSTICK_SUPPORT -DUSE_XVIDEO -DUSE_THREADS -fno-rtti
 # Added flags: -DNOSOUND
-CCFLAGS    = -fomit-frame-pointer -fno-exceptions -pedantic -Wall -W -Wno-unused-parameter -DZLIB -DJMA_SUPPORT -DHAVE_LIBPNG -DHAVE_MKSTEMP -DHAVE_STRINGS_H -DHAVE_SYS_IOCTL_H -DHAVE_STDINT_H -DRIGHTSHIFT_IS_SAR -DNOSOUND $(DEFS)
-CFLAGS     = -std=c11 $(CCFLAGS)
+CCFLAGS    = -std=c++11 -fomit-frame-pointer -fno-exceptions -pedantic -Wall -W -Wno-unused-parameter -DZLIB -DJMA_SUPPORT -DHAVE_LIBPNG -DHAVE_MKSTEMP -DHAVE_STRINGS_H -DHAVE_SYS_IOCTL_H -DHAVE_STDINT_H -DRIGHTSHIFT_IS_SAR -DNOSOUND $(DEFS)
 
 .SUFFIXES: .o .cpp .c .cc .h .m .i .s .obj
 

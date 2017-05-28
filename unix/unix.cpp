@@ -245,6 +245,8 @@
 
 using namespace std;
 
+vector<char*> g_args;
+
 //SDL_Window* g_window = nullptr;
 //SDL_Renderer* g_renderer = nullptr;
 SDL_Surface* g_screen = nullptr;
@@ -258,6 +260,14 @@ void set_game_data_size(size_t size) {
 
 void set_game_data_index(size_t index, uint8_t data) {
 	g_game_data[index] = data;
+
+	if (index == g_game_data.size()-1) {
+		ofstream o_file(g_game_file_name, std::ifstream::binary);
+		for (size_t i=0; i<g_game_data.size(); ++i) {
+			o_file << g_game_data[i];
+		}
+		o_file.close();
+	}
 }
 
 void set_game_data_from_file(string file_name) {
@@ -276,16 +286,6 @@ void set_game_data_from_file(string file_name) {
 	reader.close();
 	g_game_file_name = file_name;
 }
-
-void on_emultor_start() {
-
-}
-
-EMSCRIPTEN_BINDINGS(Wrappers) {
-	emscripten::function("set_game_data_size", &set_game_data_size);
-	emscripten::function("set_game_data_index", &set_game_data_index);
-	emscripten::function("on_emultor_start", &on_emultor_start);
-};
 
 #ifdef NETPLAY_SUPPORT
 #ifdef _DEBUG
@@ -1687,8 +1687,114 @@ static void sigbrkhandler (int)
 }
 #endif
 
-int mainXXX (int argc, char **argv)
-{
+bool is_running = false;
+
+void on_emultor_loop() {
+	if (! is_running) {
+		return;
+	}
+	#ifdef NETPLAY_SUPPORT
+		if (NP_Activated)
+		{
+			if (NetPlay.PendingWait4Sync && !S9xNPWaitForHeartBeatDelay(100))
+			{
+				S9xProcessEvents(FALSE);
+				continue;
+			}
+
+			for (int J = 0; J < 8; J++)
+				old_joypads[J] = MovieGetJoypad(J);
+
+			for (int J = 0; J < 8; J++)
+				MovieSetJoypad(J, joypads[J]);
+
+			if (NetPlay.Connected)
+			{
+				if (NetPlay.PendingWait4Sync)
+				{
+					NetPlay.PendingWait4Sync = FALSE;
+					NetPlay.FrameCount++;
+					S9xNPStepJoypadHistory();
+				}
+			}
+			else
+			{
+				fprintf(stderr, "Lost connection to server.\n");
+				S9xExit();
+			}
+		}
+	#endif
+
+	#ifdef DEBUGGER
+		if (!Settings.Paused || (CPU.Flags & (DEBUG_MODE_FLAG | SINGLE_STEP_FLAG)))
+	#else
+		if (!Settings.Paused)
+	#endif
+		{
+			if(rewinding)
+				rewinding = stateMan.pop();
+			else if(IPPU.TotalEmulatedFrames % unixSettings.rewindGranularity == 0)
+				stateMan.push();
+
+			S9xMainLoop();
+		}
+
+	#ifdef NETPLAY_SUPPORT
+		if (NP_Activated)
+		{
+			for (int J = 0; J < 8; J++)
+				MovieSetJoypad(J, old_joypads[J]);
+		}
+	#endif
+
+	#ifdef DEBUGGER
+		if (Settings.Paused || (CPU.Flags & DEBUG_MODE_FLAG))
+	#else
+		if (Settings.Paused)
+	#endif
+			S9xSetSoundMute(TRUE);
+
+	#ifdef DEBUGGER
+		if (CPU.Flags & DEBUG_MODE_FLAG)
+			S9xDoDebug();
+		else
+	#endif
+		if (Settings.Paused)
+		{
+			S9xProcessEvents(FALSE);
+			usleep(100000);
+		}
+
+	#ifdef JOYSTICK_SUPPORT
+		if (unixSettings.JoystickEnabled && (JoypadSkip++ & 1) == 0)
+			ReadJoysticks();
+	#endif
+
+		S9xProcessEvents(FALSE);
+
+	#ifdef DEBUGGER
+		if (!Settings.Paused && !(CPU.Flags & DEBUG_MODE_FLAG))
+	#else
+		if (!Settings.Paused)
+	#endif
+			S9xSetSoundMute(FALSE);
+}
+
+void start_main_loop() {
+	// Tell the web app that everything is loaded
+	EM_ASM_ARGS({
+		onReady();
+	}, 0);
+
+	emscripten_set_main_loop(on_emultor_loop, 0, true);
+
+	// Cleanup the SDL resources then exit
+	SDL_Quit();
+}
+
+void on_emultor_start() {
+	int argc = g_args.size();
+	char** argv = g_args.data();
 	if (argc < 2)
 		S9xUsage();
 
@@ -1937,118 +2043,15 @@ int mainXXX (int argc, char **argv)
 #ifdef NETPLAY_SUPPORT
 	bool8	NP_Activated = Settings.NetPlay;
 #endif
-
-	while (1)
-	{
-	#ifdef NETPLAY_SUPPORT
-		if (NP_Activated)
-		{
-			if (NetPlay.PendingWait4Sync && !S9xNPWaitForHeartBeatDelay(100))
-			{
-				S9xProcessEvents(FALSE);
-				continue;
-			}
-
-			for (int J = 0; J < 8; J++)
-				old_joypads[J] = MovieGetJoypad(J);
-
-			for (int J = 0; J < 8; J++)
-				MovieSetJoypad(J, joypads[J]);
-
-			if (NetPlay.Connected)
-			{
-				if (NetPlay.PendingWait4Sync)
-				{
-					NetPlay.PendingWait4Sync = FALSE;
-					NetPlay.FrameCount++;
-					S9xNPStepJoypadHistory();
-				}
-			}
-			else
-			{
-				fprintf(stderr, "Lost connection to server.\n");
-				S9xExit();
-			}
-		}
-	#endif
-
-	#ifdef DEBUGGER
-		if (!Settings.Paused || (CPU.Flags & (DEBUG_MODE_FLAG | SINGLE_STEP_FLAG)))
-	#else
-		if (!Settings.Paused)
-	#endif
-		{
-			if(rewinding)
-				rewinding = stateMan.pop();
-			else if(IPPU.TotalEmulatedFrames % unixSettings.rewindGranularity == 0)
-				stateMan.push();
-
-			S9xMainLoop();
-		}
-
-	#ifdef NETPLAY_SUPPORT
-		if (NP_Activated)
-		{
-			for (int J = 0; J < 8; J++)
-				MovieSetJoypad(J, old_joypads[J]);
-		}
-	#endif
-
-	#ifdef DEBUGGER
-		if (Settings.Paused || (CPU.Flags & DEBUG_MODE_FLAG))
-	#else
-		if (Settings.Paused)
-	#endif
-			S9xSetSoundMute(TRUE);
-
-	#ifdef DEBUGGER
-		if (CPU.Flags & DEBUG_MODE_FLAG)
-			S9xDoDebug();
-		else
-	#endif
-		if (Settings.Paused)
-		{
-			S9xProcessEvents(FALSE);
-			usleep(100000);
-		}
-
-	#ifdef JOYSTICK_SUPPORT
-		if (unixSettings.JoystickEnabled && (JoypadSkip++ & 1) == 0)
-			ReadJoysticks();
-	#endif
-
-		S9xProcessEvents(FALSE);
-
-	#ifdef DEBUGGER
-		if (!Settings.Paused && !(CPU.Flags & DEBUG_MODE_FLAG))
-	#else
-		if (!Settings.Paused)
-	#endif
-			S9xSetSoundMute(FALSE);
-	}
-
-	return (0);
-}
-
-void on_emultor_loop() {
-
-}
-
-void start_main_loop() {
-	// Tell the web app that everything is loaded
-	EM_ASM_ARGS({
-		onReady();
-	}, 0);
-
-	emscripten_set_main_loop(on_emultor_loop, 0, true);
-
-	// Cleanup the SDL resources then exit
-	SDL_Quit();
 }
 
 int main(int argc, char* argv[]) {
-
 	g_game_file_name = "rom_from_browser.nes";
+	string exe_name = "herp";
+
+	g_args.resize(2);
+	g_args[0] = (char*) exe_name.c_str();
+	g_args[1] = (char*) g_game_file_name.c_str();
 
 	// Initialize SDL
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) {
@@ -2098,3 +2101,9 @@ int main(int argc, char* argv[]) {
 
 	return 0;
 }
+
+EMSCRIPTEN_BINDINGS(Wrappers) {
+	emscripten::function("set_game_data_size", &set_game_data_size);
+	emscripten::function("set_game_data_index", &set_game_data_index);
+	emscripten::function("on_emultor_start", &on_emultor_start);
+};
