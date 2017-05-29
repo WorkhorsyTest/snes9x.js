@@ -36,9 +36,11 @@ GASM       = em++
 INCLUDES   += -I. -I.. -I../apu/ -I../apu/bapu -I../jma/ -I../filter/ -I/home/matt/.emscripten_ports/zlib/zlib-version_1/ -I/home/matt/.emscripten_ports/sdl2-image/SDL2_image-version_3/external/libpng-1.6.2/
 
 #CCFLAGS    = -g4 -O0 -fomit-frame-pointer -fno-exceptions -fno-rtti -pedantic -Wall -W -Wno-unused-parameter  -DJOYSTICK_SUPPORT -DZLIB -DJMA_SUPPORT -DHAVE_LIBPNG -DHAVE_MKSTEMP -DHAVE_STRINGS_H -DHAVE_SYS_IOCTL_H -DHAVE_STDINT_H -DRIGHTSHIFT_IS_SAR -DUSE_XVIDEO -DUSE_THREADS $(DEFS)
-# Removed flags: -DJOYSTICK_SUPPORT -DUSE_XVIDEO -DUSE_THREADS -fno-rtti
+# Removed flags: -DJOYSTICK_SUPPORT -DUSE_THREADS -fno-rtti
 # Added flags: -DNOSOUND
-CCFLAGS    = -std=c++11 -fomit-frame-pointer -fno-exceptions -pedantic -Wall -W -Wno-unused-parameter -DZLIB -DJMA_SUPPORT -DHAVE_LIBPNG -DHAVE_MKSTEMP -DHAVE_STRINGS_H -DHAVE_SYS_IOCTL_H -DHAVE_STDINT_H -DRIGHTSHIFT_IS_SAR -DNOSOUND $(DEFS)
+FLAGS    = -fomit-frame-pointer -fno-exceptions -pedantic -Wall -W -Wno-unused-parameter -DZLIB -DJMA_SUPPORT -DHAVE_LIBPNG -DHAVE_MKSTEMP -DHAVE_STRINGS_H -DHAVE_SYS_IOCTL_H -DHAVE_STDINT_H -DRIGHTSHIFT_IS_SAR -DUSE_XVIDEO -DNOSOUND $(DEFS)
+CCFLAGS  = -std=c++11 $(FLAGS)
+CFLAGS   = -std=c11 $(FLAGS)
 
 .SUFFIXES: .o .cpp .c .cc .h .m .i .s .obj
 
@@ -47,7 +49,7 @@ all: Makefile index.js
 
 index.js: $(OBJECTS)
 	#-lm -lz -lpng -lSM -lICE -lX11 -lXext -lXv
-	$(CCC) $(LDFLAGS) $(INCLUDES) -o $@ $(OBJECTS) -g4 -O0 --bind -lpthread -s WASM=1 -s USE_SDL=2 -s USE_ZLIB=1 -s USE_LIBPNG=1 -s FORCE_FILESYSTEM=1 -s ASSERTIONS=1 -s ALLOW_MEMORY_GROWTH=1 -s ABORTING_MALLOC=0
+	$(CCC) $(LDFLAGS) $(INCLUDES) -o $@ $(OBJECTS) -g4 -O0 -std=c++11 --bind -lpthread -s WASM=1 -s USE_SDL=2 -s USE_ZLIB=1 -s USE_LIBPNG=1 -s FORCE_FILESYSTEM=1 -s ASSERTIONS=1 -s ALLOW_MEMORY_GROWTH=1 -s ABORTING_MALLOC=0
 
 ../jma/s9x-jma.o: ../jma/s9x-jma.cpp
 	$(CCC) $(INCLUDES) -c $(CCFLAGS) -fexceptions $*.cpp -o $@
@@ -72,7 +74,7 @@ index.js: $(OBJECTS)
 	$(CCC) $(INCLUDES) -c $(CCFLAGS) $*.cpp -o $@
 
 .c.o:
-	$(CC) $(INCLUDES) -c $(CCFLAGS) $*.c -o $@
+	$(CC) $(INCLUDES) -c $(CFLAGS) $*.c -o $@
 
 .cpp.S:
 	$(GASM) $(INCLUDES) -S $(CCFLAGS) $*.cpp -o $@

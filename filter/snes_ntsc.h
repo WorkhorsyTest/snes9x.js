@@ -6,9 +6,9 @@
 
 #include "snes_ntsc_config.h"
 
-#ifdef __cplusplus
-	extern "C" {
-#endif
+//#ifdef __cplusplus
+//	extern "C" {
+//#endif
 
 /* Image parameters, ranging from -1.0 to 1.0. Actual internal values shown
 in parenthesis and should remain fairly stable in future versions. */
@@ -20,7 +20,7 @@ typedef struct snes_ntsc_setup_t
 	double contrast;   /* -1 = dark (0.5)       +1 = light (1.5) */
 	double brightness; /* -1 = dark (0.5)       +1 = light (1.5) */
 	double sharpness;  /* edge contrast enhancement/blurring */
-	
+
 	/* Advanced parameters */
 	double gamma;      /* -1 = dark (1.5)       +1 = light (0.5) */
 	double resolution; /* image resolution */
@@ -29,7 +29,7 @@ typedef struct snes_ntsc_setup_t
 	double bleed;      /* color bleed (color resolution reduction) */
 	int merge_fields;  /* if 1, merges even and odd fields together to reduce flicker */
 	float const* decoder_matrix; /* optional RGB decoder matrix, 6 elements */
-	
+
 	unsigned long const* bsnes_colortbl; /* undocumented; set to 0 */
 } snes_ntsc_setup_t;
 
@@ -203,8 +203,8 @@ enum { snes_ntsc_burst_size = snes_ntsc_entry_size / snes_ntsc_burst_count };
 		rgb_out = raw_ << x;\
 }
 
-#ifdef __cplusplus
-	}
-#endif
+//#ifdef __cplusplus
+//	}
+//#endif
 
 #endif

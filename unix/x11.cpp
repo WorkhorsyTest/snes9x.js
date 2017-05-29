@@ -199,15 +199,15 @@
 #endif
 #include <sys/stat.h>
 #include <sys/ioctl.h>
-
+/*
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 #include <X11/keysym.h>
 #include <X11/cursorfont.h>
-
+*/
 #ifdef USE_XVIDEO
-#include <X11/extensions/Xvlib.h>
+//#include <X11/extensions/Xvlib.h>
 
 #define FOURCC_YUY2 0x32595559
 #endif
@@ -215,7 +215,7 @@
 #ifdef MITSHM
 #include <sys/ipc.h>
 #include <sys/shm.h>
-#include <X11/extensions/XShm.h>
+//#include <X11/extensions/XShm.h>
 #endif
 
 #include "snes9x.h"
@@ -232,13 +232,13 @@
 struct Image
 {
 #ifdef USE_XVIDEO
-	union
-	{
-		XvImage*	xvimage;
+//	union
+//	{
+//		XvImage*	xvimage;
 #endif
-		XImage*	ximage;
+//		XImage*	ximage;
 #ifdef USE_XVIDEO
-	};
+//	};
 #endif
 
 	char *data;
@@ -251,10 +251,10 @@ struct Image
 
 struct GUIData
 {
-	Display			*display;
-	Screen			*screen;
-	Visual			*visual;
-	GC				gc;
+	//Display			*display;
+	//Screen			*screen;
+	//Visual			*visual;
+	//GC				gc;
 	int				screen_num;
 	int				depth;
 	int				pixel_format;
@@ -265,15 +265,15 @@ struct GUIData
 	uint32			red_size;
 	uint32			green_size;
 	uint32			blue_size;
-	Window			window;
+	//Window			window;
 	Image			*image;
 	uint8			*snes_buffer;
 	uint8			*filter_buffer;
 	uint8			*blit_screen;
 	uint32			blit_screen_pitch;
 	bool8			need_convert;
-	Cursor			point_cursor;
-	Cursor			cross_hair_cursor;
+	//Cursor			point_cursor;
+	//Cursor			cross_hair_cursor;
 	int				video_mode;
 	int				mouse_x;
 	int				mouse_y;
@@ -298,7 +298,7 @@ struct GUIData
 	unsigned char		v_table[1 << 15];
 #endif
 #ifdef MITSHM
-	XShmSegmentInfo	sm_info;
+	//XShmSegmentInfo	sm_info;
 	bool8			use_shared_memory;
 #endif
 };
@@ -335,8 +335,8 @@ enum
 	VIDEOMODE_HQ2X
 };
 
-static int ErrorHandler (Display *, XErrorEvent *);
-static bool8 CheckForPendingXEvents (Display *);
+//static int ErrorHandler (Display *, XErrorEvent *);
+//static bool8 CheckForPendingXEvents (Display *);
 static void SetXRepeat (bool8);
 static void SetupImage (void);
 static void TakedownImage (void);
@@ -353,6 +353,7 @@ static void Convert16To24Packed (int, int);
 
 void S9xExtraDisplayUsage (void)
 {
+#if 0
 	/*                               12345678901234567890123456789012345678901234567890123456789012345678901234567890 */
 
 	S9xMessage(S9X_INFO, S9X_USAGE, "-setrepeat                      Allow altering keyboard auto-repeat");
@@ -372,10 +373,12 @@ void S9xExtraDisplayUsage (void)
 	S9xMessage(S9X_INFO, S9X_USAGE, "-v7                             Video mode: EPX");
 	S9xMessage(S9X_INFO, S9X_USAGE, "-v8                             Video mode: hq2x");
 	S9xMessage(S9X_INFO, S9X_USAGE, "");
+#endif
 }
 
 void S9xParseDisplayArg (char **argv, int &i, int argc)
 {
+#if 0
 	if (!strcasecmp(argv[i], "-setrepeat"))
 		GUI.no_repeat = FALSE;
 	else
@@ -406,10 +409,12 @@ void S9xParseDisplayArg (char **argv, int &i, int argc)
 	}
 	else
 		S9xUsage();
+#endif
 }
 
 const char * S9xParseDisplayConfig (ConfigFile &conf, int pass)
 {
+#if 0
 	if (pass != 1)
 		return ("Unix/X11");
 
@@ -562,7 +567,7 @@ const char * S9xParseDisplayConfig (ConfigFile &conf, int pass)
 	}
 	else
 		GUI.video_mode = VIDEOMODE_BLOCKY;
-
+#endif
 	return ("Unix/X11");
 }
 
@@ -571,7 +576,7 @@ static void FatalError (const char *str)
 	fprintf(stderr, "%s\n", str);
 	S9xExit();
 }
-
+/*
 static int ErrorHandler (Display *display, XErrorEvent *event)
 {
 #ifdef MITSHM
@@ -579,7 +584,7 @@ static int ErrorHandler (Display *display, XErrorEvent *event)
 #endif
 	return (0);
 }
-
+*/
 #ifdef USE_XVIDEO
 static int get_inv_shift (uint32 mask, int bpp)
 {
@@ -603,6 +608,7 @@ static unsigned char CLAMP (int v, int min, int max)
 
 static bool8 SetupXvideo()
 {
+#if 0
 	int ret;
 
 	// Init xv_port
@@ -803,13 +809,14 @@ static bool8 SetupXvideo()
 			GUI.v_table[color] = CLAMP (v, 0, 255);
 		}
 	}
-
+#endif
 	return TRUE;
 }
 #endif
 
 void S9xInitDisplay (int argc, char **argv)
 {
+#if 0
 	GUI.display = XOpenDisplay(NULL);
 	if (GUI.display == NULL)
 		FatalError("Failed to connect to X server.");
@@ -1041,10 +1048,12 @@ void S9xInitDisplay (int argc, char **argv)
 	}
 
 	printf("Using internal pixel format %d\n",GUI.pixel_format);
+#endif
 }
 
 void S9xDeinitDisplay (void)
 {
+#if 0
 	TakedownImage();
 	if (GUI.display != NULL)
 	{
@@ -1061,10 +1070,12 @@ void S9xDeinitDisplay (void)
 	S9xBlitFilterDeinit();
 	S9xBlit2xSaIFilterDeinit();
 	S9xBlitHQ2xFilterDeinit();
+#endif
 }
 
 static void SetupImage (void)
 {
+#if 0
 	TakedownImage();
 
 	// Create new image struct
@@ -1108,10 +1119,12 @@ static void SetupImage (void)
 	if (GUI.need_convert) { printf("\tImage conversion needed before blit.\n"); }
 
 	S9xGraphicsInit();
+#endif
 }
 
 static void TakedownImage (void)
 {
+#if 0
 	if (GUI.snes_buffer)
 	{
 		free(GUI.snes_buffer);
@@ -1138,10 +1151,12 @@ static void TakedownImage (void)
 	}
 
 	S9xGraphicsDeinit();
+#endif
 }
 
 static void SetupXImage (void)
 {
+#if 0
 #ifdef MITSHM
 	GUI.use_shared_memory = TRUE;
 
@@ -1224,10 +1239,12 @@ static void SetupXImage (void)
 #else
 	GUI.image->ximage->byte_order = MSBFirst;
 #endif
+#endif
 }
 
 static void TakedownXImage (void)
 {
+#if 0
 	if (GUI.image->ximage)
 	{
 	#ifdef MITSHM
@@ -1249,11 +1266,13 @@ static void TakedownXImage (void)
 			GUI.image->ximage = NULL;
 		}
 	}
+#endif
 }
 
 #ifdef USE_XVIDEO
 static void SetupXvImage (void)
 {
+#if 0
 #ifdef MITSHM
 	GUI.use_shared_memory = TRUE;
 
@@ -1330,10 +1349,12 @@ static void SetupXvImage (void)
 	// Set final values
 	GUI.image->bits_per_pixel = GUI.xv_bpp;
 	GUI.image->data = GUI.image->xvimage->data;
+#endif
 }
 
 static void TakedownXvImage (void)
 {
+#if 0
 	if (GUI.image->xvimage)
 	{
 	#ifdef MITSHM
@@ -1357,11 +1378,13 @@ static void TakedownXvImage (void)
 			GUI.image->xvimage = NULL;
 		}
 	}
+#endif
 }
 #endif
 
 void S9xPutImage (int width, int height)
 {
+#if 0
 	static int	prevWidth = 0, prevHeight = 0;
 	int			copyWidth, copyHeight;
 	Blitter		blitFn = NULL;
@@ -1476,10 +1499,12 @@ void S9xPutImage (int width, int height)
 
 	prevWidth  = width;
 	prevHeight = height;
+#endif
 }
 
 static void Convert16To24 (int width, int height)
 {
+#if 0
 	if (GUI.pixel_format == 565)
 	{
 		for (int y = 0; y < height; y++)
@@ -1508,10 +1533,12 @@ static void Convert16To24 (int width, int height)
 			}
 		}
 	}
+#endif
 }
 
 static void Convert16To24Packed (int width, int height)
 {
+#if 0
 	if (GUI.pixel_format == 565)
 	{
 		for (int y = 0; y < height; y++)
@@ -1578,10 +1605,12 @@ static void Convert16To24Packed (int width, int height)
 			}
 		}
 	}
+#endif
 }
 
 static void Repaint (bool8 isFrameBoundry)
 {
+#if 0
 #ifdef USE_XVIDEO
 	if (GUI.use_xvideo)
 	{
@@ -1640,18 +1669,23 @@ static void Repaint (bool8 isFrameBoundry)
 
 	if (Settings.DumpStreams && isFrameBoundry)
 		S9xVideoLogger(GUI.image->data, SNES_WIDTH * 2, SNES_HEIGHT_EXTENDED * 2, GUI.bytes_per_pixel, GUI.image->bytes_per_line);
+#endif
 }
 
 void S9xTextMode (void)
 {
+#if 0
 	SetXRepeat(TRUE);
+#endif
 }
 
 void S9xGraphicsMode (void)
 {
+#if 0
 	SetXRepeat(FALSE);
+#endif
 }
-
+/*
 static bool8 CheckForPendingXEvents (Display *display)
 {
 #ifdef SELECT_BROKEN_FOR_SIGNALS
@@ -1662,9 +1696,10 @@ static bool8 CheckForPendingXEvents (Display *display)
 	return (XPending(display));
 #endif
 }
-
+*/
 void S9xProcessEvents (bool8 block)
 {
+#if 0
 	while (block || CheckForPendingXEvents(GUI.display))
 	{
 		XEvent	event;
@@ -1709,10 +1744,12 @@ void S9xProcessEvents (bool8 block)
 				break;
 		}
 	}
+#endif
 }
 
 const char * S9xSelectFilename (const char *def, const char *dir1, const char *ext1, const char *title)
 {
+#if 0
 	static char	s[PATH_MAX + 1];
 	char		buffer[PATH_MAX + 1];
 
@@ -1746,12 +1783,13 @@ const char * S9xSelectFilename (const char *def, const char *dir1, const char *e
 
 		return (s);
 	}
-
+#endif
 	return (NULL);
 }
 
 void S9xMessage (int type, int number, const char *message)
 {
+#if 0
 	const int	max = 36 * 3;
 	static char	buffer[max + 1];
 
@@ -1759,10 +1797,12 @@ void S9xMessage (int type, int number, const char *message)
 	strncpy(buffer, message, max + 1);
 	buffer[max] = 0;
 	S9xSetInfoString(buffer);
+#endif
 }
 
 const char * S9xStringInput (const char *message)
 {
+#if 0
 	static char	buffer[256];
 
 	printf("%s: ", message);
@@ -1770,22 +1810,26 @@ const char * S9xStringInput (const char *message)
 
 	if (fgets(buffer, sizeof(buffer) - 2, stdin))
 		return (buffer);
-
+#endif
 	return (NULL);
 }
 
 void S9xSetTitle (const char *string)
 {
+#if 0
 	XStoreName(GUI.display, GUI.window, string);
 	XFlush(GUI.display);
+#endif
 }
 
 static void SetXRepeat (bool8 state)
 {
+#if 0
 	if (state)
 		XAutoRepeatOn(GUI.display);
 	else
 		XAutoRepeatOff(GUI.display);
+#endif
 }
 
 s9xcommand_t S9xGetDisplayCommandT (const char *n)
@@ -1815,6 +1859,7 @@ void S9xHandleDisplayCommand (s9xcommand_t cmd, int16 data1, int16 data2)
 
 bool8 S9xMapDisplayInput (const char *n, s9xcommand_t *cmd)
 {
+#if 0
 	int	i, d;
 
 	if (!isdigit(n[1]) || !isdigit(n[2]) || n[3] != ':')
@@ -1905,7 +1950,7 @@ unrecog:
 	sprintf(err, "Unrecognized input device name '%s'", n);
 	perror(err);
 	delete [] err;
-
+#endif
 	return (false);
 }
 

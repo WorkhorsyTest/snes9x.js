@@ -252,6 +252,7 @@ vector<char*> g_args;
 SDL_Surface* g_screen = nullptr;
 string g_game_file_name;
 vector<uint8_t> g_game_data;
+bool is_running = false;
 
 void set_game_data_size(size_t size) {
 	g_game_data.resize(size);
@@ -1687,8 +1688,6 @@ static void sigbrkhandler (int)
 }
 #endif
 
-bool is_running = false;
-
 void on_emultor_loop() {
 	if (! is_running) {
 		return;
@@ -2043,6 +2042,8 @@ void on_emultor_start() {
 #ifdef NETPLAY_SUPPORT
 	bool8	NP_Activated = Settings.NetPlay;
 #endif
+
+	is_running = true;
 }
 
 int main(int argc, char* argv[]) {
